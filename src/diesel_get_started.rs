@@ -16,6 +16,7 @@ pub fn run() {
 
     for post in results {
         println!("{:?}", post);
+        delete_post(&db_connection, post.title);
     }
 }
 
@@ -55,4 +56,14 @@ pub fn update_post(db_conn: &PgConnection, id: i32) -> Post {
         .set(published.eq(true))
         .get_result(db_conn)
         .expect(&format!("Unable to find post {}", id))
+}
+
+pub fn delete_post(db_conn: &PgConnection, target: String) {
+    use crate::schema::posts::dsl::*;
+
+    let pattern = format!("%{}%", target);
+
+    diesel::delete(posts.filter(title.like(pattern)))
+        .execute(db_conn)
+        .expect("Error deleting post");
 }
