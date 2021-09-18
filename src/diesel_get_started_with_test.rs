@@ -66,3 +66,19 @@ pub fn delete_post(db_conn: &PgConnection, target: String) {
         .execute(db_conn)
         .expect("Error deleting post");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dotenv;
+
+    fn config_env() {
+        dotenv::from_filename(".env.test").ok();
+    }
+
+    #[test]
+    fn should_establish_connection() {
+        config_env();
+        establish_connection();
+    }
+}
