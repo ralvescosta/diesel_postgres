@@ -6,6 +6,7 @@ use diesel::prelude::*;
 use dotenv::dotenv;
 use models::Post;
 use std::env;
+use std::env::args;
 
 use crate::models::NewPost;
 
@@ -15,7 +16,8 @@ mod schema;
 fn main() {
     let db_connection = establish_connection();
 
-    create_post(&db_connection, "First Title", "First Body");
+    let post_created = create_post(&db_connection, "First Title", "First Body");
+    update_post(&db_connection, post_created.id);
 
     let results = get_posts(&db_connection);
 
@@ -51,4 +53,13 @@ pub fn create_post<'a>(db_coon: &PgConnection, title: &'a str, body: &'a str) ->
         .values(&new_post)
         .get_result(db_coon)
         .expect("Error saving new post")
+}
+
+pub fn update_post(db_conn: &PgConnection, id: i32) -> Post {
+    use crate::schema::posts::dsl::{posts, published};
+
+    diesel::update(posts.find(id))
+        .set(published.eq(true))
+        .get_result(db_conn)
+        .expect(&format!("Unable to find post {}", id))
 }
