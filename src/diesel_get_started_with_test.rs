@@ -79,6 +79,6 @@ mod tests {
     #[test]
     fn should_establish_connection() {
         config_env();
-        establish_connection();
+        let result = establish_connection();
     }
 }

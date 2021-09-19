@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-diesel = { version = "1.4.4", features = ["postgres"] }
+diesel = { version = "1.4.4", features = ["postgres", "sqlite"] }
 postgres = "0.19.1"
 dotenv = "0.15.0"
 
 [dev-dependencies]
-sqlite = "0.26.0"
+# sqlite = "0.26.0"
