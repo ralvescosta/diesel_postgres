@@ -37,14 +37,14 @@ pub fn get_posts(db_conn: &PgConnection) -> Vec<Post> {
         .expect("Error loading posts")
 }
 
-pub fn create_post<'a>(db_coon: &PgConnection, title: &'a str, body: &'a str) -> Post {
+pub fn create_post<'a>(db_conn: &PgConnection, title: &'a str, body: &'a str) -> Post {
     use crate::schema::posts;
 
     let new_post = NewPost { body, title };
 
     diesel::insert_into(posts::table)
         .values(&new_post)
-        .get_result(db_coon)
+        .get_result(db_conn)
         .expect("Error saving new post")
 }
 
@@ -80,9 +80,9 @@ mod tests {
     #[test]
     fn should_establish_connection() {
         config_env();
-        let db_coon = establish_connection();
+        let db_conn = establish_connection();
 
-        db_coon.test_transaction::<_, Error, _>(|| {
+        db_conn.test_transaction::<_, Error, _>(|| {
             let post_to_create = Post {
                 id: 0,
                 body: String::from("Some Body"),
@@ -90,7 +90,7 @@ mod tests {
                 published: false,
             };
             let post_created = create_post(
-                &db_coon,
+                &db_conn,
                 post_to_create.title.as_str(),
                 post_to_create.body.as_str(),
             );
@@ -98,12 +98,16 @@ mod tests {
             assert_eq!(post_created.body, post_to_create.body);
             assert_eq!(post_created.published, post_to_create.published);
 
-            let post_updated = update_post(&db_coon, post_created.id);
+            let post_updated = update_post(&db_conn, post_created.id);
             assert_eq!(post_updated.published, true);
 
-            let all_posts = get_posts(&db_coon);
+            let all_posts = get_posts(&db_conn);
             assert_eq!(all_posts[0].title, post_to_create.title);
             assert_eq!(all_posts[0].body, post_to_create.body);
+
+            delete_post(&db_conn, post_to_create.title);
+            let all_posts = get_posts(&db_conn);
+            assert_eq!(all_posts.len(), 0);
 
             Ok(())
         })
