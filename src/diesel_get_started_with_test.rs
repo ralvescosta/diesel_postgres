@@ -70,15 +70,42 @@ pub fn delete_post(db_conn: &PgConnection, target: String) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use diesel::result::Error;
     use dotenv;
 
     fn config_env() {
-        dotenv::from_filename(".env.test").ok();
+        dotenv::from_filename(".env").ok();
     }
 
     #[test]
     fn should_establish_connection() {
         config_env();
-        let result = establish_connection();
+        let db_coon = establish_connection();
+
+        db_coon.test_transaction::<_, Error, _>(|| {
+            let post_to_create = Post {
+                id: 0,
+                body: String::from("Some Body"),
+                title: String::from("Some Title"),
+                published: false,
+            };
+            let post_created = create_post(
+                &db_coon,
+                post_to_create.title.as_str(),
+                post_to_create.body.as_str(),
+            );
+            assert_eq!(post_created.title, post_to_create.title);
+            assert_eq!(post_created.body, post_to_create.body);
+            assert_eq!(post_created.published, post_to_create.published);
+
+            let post_updated = update_post(&db_coon, post_created.id);
+            assert_eq!(post_updated.published, true);
+
+            let all_posts = get_posts(&db_coon);
+            assert_eq!(all_posts[0].title, post_to_create.title);
+            assert_eq!(all_posts[0].body, post_to_create.body);
+
+            Ok(())
+        })
     }
 }
