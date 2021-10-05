@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-diesel = { version = "1.4.4", features = ["postgres", "sqlite"] }
+diesel = { version = "1.4.4", features = ["postgres", "sqlite", "r2d2"] }
 postgres = "0.19.1"
 dotenv = "0.15.0"
+r2d2 = "0.8.9"
 
 [dev-dependencies]
 mockall = "0.10.2"
